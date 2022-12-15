@@ -1,8 +1,14 @@
 using namespace System
 
 #csvファイルのパス
-function TCID50([string]$path, [Int32]$magn) {
-    $values = Import-Csv -Path $path -Delimiter "," -Encoding Default
+function TCID50 {
+    [CmdletBinding()]
+    param (
+        [string]$Path,
+        [Int32]$Magn
+    )
+
+    $values = Import-Csv -Path $Path -Delimiter "," -Encoding Default
     [string[]]$headers = $values | Get-Member -MemberType 'NoteProperty' | Select-Object -ExpandProperty 'Name'
 
     [double]$sigma = -0.5
@@ -21,16 +27,16 @@ function TCID50([string]$path, [Int32]$magn) {
     [double]$firstHeader = $headers[0]
 
     #一列目の希釈率
-    [double]$firstLineRate = [Math]::Pow($magn, $firstHeader)
+    [double]$firstLineRate = [Math]::Pow($Magn, $firstHeader)
 
     <#
     Karberの式より
-    #TCID50＝（1列目の希釈率）×{(希釈倍率)^(Σ－0.5)}
+    TCID50＝（1列目の希釈率）×{(希釈倍率)^(Σ－0.5)}
     この場合、Σには最初から-0.5を引いてある。
     #>
-    [double]$result = $firstLineRate * [Math]::Pow($magn, $sigma)
+    [double]$result = $firstLineRate * [Math]::Pow($Magn, $sigma)
     return ($result)
 }
 
 $samplePath = "$PSScriptRoot\sample_01.csv"
-TCID50($samplePath, 10)
+TCID50 -Path $samplePath -Magn 10
