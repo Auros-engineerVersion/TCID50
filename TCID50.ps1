@@ -1,27 +1,36 @@
 using namespace System
 
-function MatrixReverse($matrix){
-    for($i = 0; $i -lt $matrix.length; $i++) {
-        for ($j = 0; $j -lt $matrix[0].length; $j++) {
+#csvファイルのパス
+function TCID50([string]$path, [Int32]$magn) {
+    $values = Import-Csv -Path $path -Delimiter "," -Encoding Default
+    [string[]]$headers = $values | Get-Member -MemberType 'NoteProperty' | Select-Object -ExpandProperty 'Name'
 
+    [double]$sigma = -0.5
+    foreach ($header in $headers) {
+        #50%以上顕性の数を取得
+        $halfOvertNum = 0
+        foreach ($v in $values.$header) {
+            $halfOvertNum += $v
         }
+        $sigma += $halfOvertNum / $values.Count
     }
+
+    Write-Host "sigam is $sigma"
+    #希釈倍率
+    #一度変数を経由しないとエラーが起きる
+    [double]$firstHeader = $headers[0]
+
+    #一列目の希釈率
+    [double]$firstLineRate = [Math]::Pow($magn, $firstHeader)
+
+    <#
+    Karberの式より
+    #TCID50＝（1列目の希釈率）×{(希釈倍率)^(Σ－0.5)}
+    この場合、Σには最初から-0.5を引いてある。
+    #>
+    [double]$result = $firstLineRate * [Math]::Pow($magn, $sigma)
+    return ($result)
 }
 
-
-function GetCsvValue([string]$path) {
-    $value = Import-Csv -Path $samplePath -Encoding utf8
-    return ($value)
-}
-
-function TCID50($values) {
-    foreach ($value in $values) {
-        Write-Host $value | Format-Table
-        $values.Address()
-    }
-}
-
-$samplePath = "$PSScriptRoot\sample.csv"
-Write-Host $samplePath
-$values = GetCsvValue($samplePath)
-TCID50($values)
+$samplePath = "$PSScriptRoot\sample_01.csv"
+TCID50($samplePath, 10)
