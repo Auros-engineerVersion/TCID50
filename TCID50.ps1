@@ -22,12 +22,9 @@ function TCID50 {
     }
 
     Write-Host "sigam is $sigma"
-    #希釈倍率
-    #一度変数を経由しないとエラーが起きる
-    [double]$firstHeader = $headers[0]
 
-    #一列目の希釈率
-    [double]$firstLineRate = [Math]::Pow($Magn, $firstHeader)
+    #一列目の希釈倍率
+    [double]$firstLineRate = [Math]::Pow($Magn, $headers[0])
 
     <#
     Karberの式より
